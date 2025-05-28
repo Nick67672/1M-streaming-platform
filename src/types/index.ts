@@ -9,15 +9,6 @@ export interface Video {
   createdAt: string;
 }
 
-export interface Comment {
-  id: string;
-  content: string;
-  userId: string;
-  videoId: string;
-  createdAt: string;
-  user?: UserProfile;
-}
-
 export interface UserProfile {
   id: string;
   username: string;

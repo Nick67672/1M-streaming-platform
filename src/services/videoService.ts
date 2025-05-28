@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { Video, Comment } from '../types';
+import type { Video } from '../types';
 
 // Dummy data for development
 const dummyVideos: Video[] = [
@@ -137,27 +137,4 @@ export async function incrementViews(
     console.error('Error incrementing views:', error);
     return { data: null, error: error as Error };
   }
-}
-
-export async function fetchComments(
-  videoId: string
-): Promise<{ data: Comment[] | null; error: Error | null }> {
-  // Return empty comments for now
-  return { data: [], error: null };
-}
-
-export async function addComment(
-  content: string,
-  videoId: string,
-  userId: string
-): Promise<{ data: Comment | null; error: Error | null }> {
-  // Simulate adding a comment
-  const newComment: Comment = {
-    id: Math.random().toString(),
-    content,
-    userId,
-    videoId,
-    createdAt: new Date().toISOString(),
-  };
-  return { data: newComment, error: null };
 }

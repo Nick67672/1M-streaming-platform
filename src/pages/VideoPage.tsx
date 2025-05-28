@@ -8,11 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import { 
   fetchVideoById, 
   fetchRelatedVideos, 
-  incrementViews,
-  fetchComments,
-  addComment 
+  incrementViews
 } from '../services/videoService';
-import type { Video, Comment } from '../types';
+import type { Video } from '../types';
 
 const VideoPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -20,11 +18,8 @@ const VideoPage: React.FC = () => {
   
   const [video, setVideo] = useState<Video | null>(null);
   const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const [newComment, setNewComment] = useState('');
-  const [submittingComment, setSubmittingComment] = useState(false);
   
   // Fetch video and increment view count
   useEffect(() => {
@@ -78,55 +73,6 @@ const VideoPage: React.FC = () => {
     
     loadRelatedVideos();
   }, [id]);
-  
-  // Fetch comments
-  useEffect(() => {
-    const loadComments = async () => {
-      if (!id) return;
-      
-      try {
-        const { data, error } = await fetchComments(id);
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data) {
-          setComments(data);
-        }
-      } catch (err) {
-        console.error('Error loading comments:', err);
-      }
-    };
-    
-    loadComments();
-  }, [id]);
-  
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!id || !user || !newComment.trim()) return;
-    
-    try {
-      setSubmittingComment(true);
-      
-      const { data, error } = await addComment(newComment, id, user.id);
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        // Add the new comment to the list
-        setComments((prev) => [data, ...prev]);
-        setNewComment('');
-      }
-    } catch (err) {
-      console.error('Error submitting comment:', err);
-    } finally {
-      setSubmittingComment(false);
-    }
-  };
   
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -201,107 +147,6 @@ const VideoPage: React.FC = () => {
               <p className="text-gray-300 whitespace-pre-line">
                 {video.description}
               </p>
-            </div>
-            
-            {/* Comments */}
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-4">
-                {comments.length} Comments
-              </h3>
-              
-              {/* Comment Form */}
-              {user ? (
-                <form onSubmit={handleCommentSubmit} className="mb-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-[#03A9F4] flex items-center justify-center">
-                        <span className="text-white font-medium">
-                          {user.email?.charAt(0).toUpperCase() || 'U'}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex-grow">
-                      <textarea
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Add a comment..."
-                        className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-[#03A9F4] focus:border-transparent text-white"
-                        rows={2}
-                      />
-                      <div className="flex justify-end mt-2">
-                        <button
-                          type="submit"
-                          disabled={!newComment.trim() || submittingComment}
-                          className="bg-[#03A9F4] hover:bg-[#29B6F6] text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                        >
-                          {submittingComment ? 'Posting...' : 'Comment'}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                <div className="bg-gray-800 p-4 rounded-lg mb-6">
-                  <p className="text-gray-400">
-                    Please <a href="/auth" className="text-[#03A9F4]">sign in</a> to comment.
-                  </p>
-                </div>
-              )}
-              
-              {/* Comment List */}
-              <div className="space-y-6">
-                {comments.length === 0 ? (
-                  <p className="text-gray-400 text-center py-6">
-                    No comments yet. Be the first to comment!
-                  </p>
-                ) : (
-                  comments.map((comment) => (
-                    <div key={comment.id} className="flex space-x-4">
-                      <div className="flex-shrink-0">
-                        {comment.user?.avatarUrl ? (
-                          <img 
-                            src={comment.user.avatarUrl}
-                            alt={comment.user.username}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
-                            <span className="text-white font-medium">
-                              {comment.user?.username?.charAt(0).toUpperCase() || 'U'}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center">
-                          <h4 className="font-medium text-white">
-                            {comment.user?.username || 'User'}
-                          </h4>
-                          <span className="ml-2 text-sm text-gray-400">
-                            {formatDate(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-gray-300">
-                          {comment.content}
-                        </p>
-                        <div className="mt-2 flex items-center space-x-4">
-                          <button className="text-gray-400 hover:text-white text-sm flex items-center">
-                            <ThumbsUp size={14} className="mr-1" />
-                            <span>Like</span>
-                          </button>
-                          <button className="text-gray-400 hover:text-white text-sm flex items-center">
-                            <ThumbsDown size={14} className="mr-1" />
-                            <span>Dislike</span>
-                          </button>
-                          <button className="text-gray-400 hover:text-white text-sm">
-                            Reply
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
           </div>
           
