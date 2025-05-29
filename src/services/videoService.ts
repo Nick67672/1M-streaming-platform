@@ -7,7 +7,12 @@ export async function fetchVideos(
   searchQuery = ''
 ): Promise<{ data: Video[] | null; error: Error | null }> {
   try {
+    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
     console.log('Fetching videos with params:', { page, limit, searchQuery });
+    
+    if (!supabase) {
+      throw new Error('Supabase client is not initialized');
+    }
     
     let query = supabase
       .from('videos')
@@ -28,8 +33,11 @@ export async function fetchVideos(
     }
 
     if (!data) {
+      console.log('No data returned from Supabase');
       return { data: [], error: null };
     }
+
+    console.log('Raw video data:', data);
 
     const videos = data.map(video => ({
       id: video.id,
@@ -42,6 +50,7 @@ export async function fetchVideos(
       createdAt: video.created_at
     }));
 
+    console.log('Processed videos:', videos);
     return { data: videos, error: null };
   } catch (error) {
     console.error('Error fetching videos:', error);
