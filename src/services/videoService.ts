@@ -7,6 +7,8 @@ export async function fetchVideos(
   searchQuery = ''
 ): Promise<{ data: Video[] | null; error: Error | null }> {
   try {
+    console.log('Fetching videos with params:', { page, limit, searchQuery });
+    
     let query = supabase
       .from('videos')
       .select('*')
@@ -18,9 +20,15 @@ export async function fetchVideos(
     }
 
     const { data, error } = await query;
+    
+    console.log('Supabase response:', { data, error });
 
     if (error) {
       throw error;
+    }
+
+    if (!data) {
+      return { data: [], error: null };
     }
 
     const videos = data.map(video => ({
