@@ -22,7 +22,7 @@ const ProfilePage: React.FC = () => {
   
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    window.location.href = '/'; // Force a full page reload after sign out
   };
   
   const handleSaveProfile = async () => {
