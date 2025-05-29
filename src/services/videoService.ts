@@ -7,7 +7,6 @@ export async function fetchVideos(
   searchQuery = ''
 ): Promise<{ data: Video[] | null; error: Error | null }> {
   try {
-    console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL);
     console.log('Fetching videos with params:', { page, limit, searchQuery });
     
     if (!supabase) {
